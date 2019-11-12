@@ -1,0 +1,64 @@
+bin 1
+ab-HH
+.{11}
+
+bin 2
+ab-HM
+.{12}
+
+bin 3
+ab-MH
+.{13}
+
+bin 4
+ab-MM
+.{14}
+
+bin 5
+ab-MISS
+.{15}
+
+bin 6
+ac-HH
+.{21}
+
+bin 7
+ac-HM
+.{22}
+
+bin 8
+ac-MH
+.{23}
+
+bin 9
+ac-MM
+.{24}
+
+bin 10
+ac-MISS
+.{25}
+
+bin 11
+de-HH
+.{31}
+
+bin 12
+de-MM
+.{34}
+
+bin 13
+de-MISS
+.{35}
+
+bin 14
+ab-BAD
+.{199}
+
+bin 15
+ac-BAD
+.{299}
+
+bin 16
+de-BAD
+.{399}
+

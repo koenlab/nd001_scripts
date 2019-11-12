@@ -1,0 +1,1 @@
+EEG=pop_chanedit(EEG, 'insert',63,'delete',63,'append',63,'changefield',{64 'labels' 'FCz'});

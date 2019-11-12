@@ -1,0 +1,432 @@
+bin 1
+ab-hh-artist
+.{1211}
+
+bin 2
+ab-hh-function
+.{1212}
+
+bin 3
+ab-hh-pleasant
+.{1213}
+
+bin 4
+ab-hh-vacation
+.{1214}
+
+bin 5
+ab-hm-artist
+.{1221}
+
+bin 6
+ab-hm-function
+.{1222}
+
+bin 7
+ab-hm-pleasant
+.{1223}
+
+bin 8
+ab-hm-vacation
+.{1224}
+
+bin 9
+ab-mh-artist
+.{1231}
+
+bin 10
+ab-mh-function
+.{1232}
+
+bin 11
+ab-mh-pleasant
+.{1233}
+
+bin 12
+ab-mh-vacation
+.{1234}
+
+bin 13
+ab-mm-artist
+.{1241}
+
+bin 14
+ab-mm-function
+.{1242}
+
+bin 15
+ab-mm-pleasant
+.{1243}
+
+bin 16
+ab-mm-vacation
+.{1244}
+
+bin 17
+ab-miss2-artist
+.{1251}
+
+bin 18
+ab-miss2-function
+.{1252}
+
+bin 19
+ab-miss2-pleasant
+.{1253}
+
+bin 20
+ab-miss2-vacation
+.{1254}
+
+bin 21
+ab-bad-artist
+.{1991}
+
+bin 22
+ab-bad-function
+.{1992}
+
+bin 23
+ab-bad-pleasant
+.{1993}
+
+bin 24
+ab-bad-vacation
+.{1994}
+
+bin 25
+ab-h-artist
+.{1111}
+
+bin 26
+ab-h-function
+.{1112}
+
+bin 27
+ab-h-pleasant
+.{1113}
+
+bin 28
+ab-h-vacation
+.{1114}
+
+bin 29
+ab-m-artist
+.{1121}
+
+bin 30
+ab-m-function
+.{1122}
+
+bin 31
+ab-m-pleasant
+.{1123}
+
+bin 32
+ab-m-vacation
+.{1124}
+
+bin 33
+ab-miss1-artist
+.{1131}
+
+bin 34
+ab-miss1-function
+.{1132}
+
+bin 35
+ab-miss1-pleasant
+.{1133}
+
+bin 36
+ab-miss1-vacation
+.{1134}
+
+bin 37
+ac-hh-artist
+.{2211}
+
+bin 38
+ac-hh-function
+.{2212}
+
+bin 39
+ac-hh-pleasant
+.{2213}
+
+bin 40
+ac-hh-vacation
+.{2214}
+
+bin 41
+ac-hm-artist
+.{2221}
+
+bin 42
+ac-hm-function
+.{2222}
+
+bin 43
+ac-hm-pleasant
+.{2223}
+
+bin 44
+ac-hm-vacation
+.{2224}
+
+bin 45
+ac-mh-artist
+.{2231}
+
+bin 46
+ac-mh-function
+.{2232}
+
+bin 47
+ac-mh-pleasant
+.{2233}
+
+bin 48
+ac-mh-vacation
+.{2234}
+
+bin 49
+ac-mm-artist
+.{2241}
+
+bin 50
+ac-mm-function
+.{2242}
+
+bin 51
+ac-mm-pleasant
+.{2243}
+
+bin 52
+ac-mm-vacation
+.{2244}
+
+bin 53
+ac-miss2-artist
+.{2251}
+
+bin 54
+ac-miss2-function
+.{2252}
+
+bin 55
+ac-miss2-pleasant
+.{2253}
+
+bin 56
+ac-miss2-vacation
+.{2254}
+
+bin 57
+ac-bad-artist
+.{2991}
+
+bin 58
+ac-bad-function
+.{2992}
+
+bin 59
+ac-bad-pleasant
+.{2993}
+
+bin 60
+ac-bad-vacation
+.{2994}
+
+bin 61
+ac-h-artist
+.{2111}
+
+bin 62
+ac-h-function
+.{2112}
+
+bin 63
+ac-h-pleasant
+.{2113}
+
+bin 64
+ac-h-vacation
+.{2114}
+
+bin 65
+ac-m-artist
+.{2121}
+
+bin 66
+ac-m-function
+.{2122}
+
+bin 67
+ac-m-pleasant
+.{2123}
+
+bin 68
+ac-m-vacation
+.{2124}
+
+bin 69
+ac-miss1-artist
+.{2131}
+
+bin 70
+ac-miss1-function
+.{2132}
+
+bin 71
+ac-miss1-pleasant
+.{2133}
+
+bin 72
+ac-miss1-vacation
+.{2134}
+
+bin 73
+de-hh-artist
+.{3211}
+
+bin 74
+de-hh-function
+.{3212}
+
+bin 75
+de-hh-pleasant
+.{3213}
+
+bin 76
+de-hh-vacation
+.{3214}
+
+bin 77
+de-hm-artist
+.{3221}
+
+bin 78
+de-hm-function
+.{3222}
+
+bin 79
+de-hm-pleasant
+.{3223}
+
+bin 80
+de-hm-vacation
+.{3224}
+
+bin 81
+de-mh-artist
+.{3231}
+
+bin 82
+de-mh-function
+.{3232}
+
+bin 83
+de-mh-pleasant
+.{3233}
+
+bin 84
+de-mh-vacation
+.{3234}
+
+bin 85
+de-mm-artist
+.{3241}
+
+bin 86
+de-mm-function
+.{3242}
+
+bin 87
+de-mm-pleasant
+.{3243}
+
+bin 88
+de-mm-vacation
+.{3244}
+
+bin 89
+de-miss2-artist
+.{3251}
+
+bin 90
+de-miss2-function
+.{3252}
+
+bin 91
+de-miss2-pleasant
+.{3253}
+
+bin 92
+de-miss2-vacation
+.{3254}
+
+bin 93
+de-bad-artist
+.{3991}
+
+bin 94
+de-bad-function
+.{3992}
+
+bin 95
+de-bad-pleasant
+.{3993}
+
+bin 96
+de-bad-vacation
+.{3994}
+
+bin 97
+de-h-artist
+.{3111}
+
+bin 98
+de-h-function
+.{3112}
+
+bin 99
+de-h-pleasant
+.{3113}
+
+bin 100
+de-h-vacation
+.{3114}
+
+bin 101
+de-m-artist
+.{3121}
+
+bin 102
+de-m-function
+.{3122}
+
+bin 103
+de-m-pleasant
+.{3123}
+
+bin 104
+de-m-vacation
+.{3124}
+
+bin 105
+de-miss1-artist
+.{3131}
+
+bin 106
+de-miss1-function
+.{3132}
+
+bin 107
+de-miss1-pleasant
+.{3133}
+
+bin 108
+de-miss1-vacation
+.{3134}
+
