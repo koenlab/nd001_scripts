@@ -149,7 +149,7 @@ for pari = 1:length(participant_list)
     
     % Get the EEG.reject values and write to disc in main derivatives
     erp_marked_epochs = find(EEG.reject.rejmanual);
-    save( fullfile( par_deriv_out_eeg_directory, 'erp_marked_epochs.mat') , 'erp_marked_epochs' );
+    save( fullfile( par_deriv_out_directory, 'erp_marked_epochs.mat') , 'erp_marked_epochs' );
     
     % Export EVENTLIST to a file in elist
     EEG = pop_exporteegeventlist( EEG , 'Filename', fullfile( par_elist_out_directory, 'erp_good_epochs_elist.txt' ));
@@ -190,7 +190,7 @@ for pari = 1:length(participant_list)
         'RemoveDC', cfg.removedc );     
     
     % Save filtered ERP
-    ERP.erpname  = 'erp1_30hzlpf_-200to1500_avgref_preblc';
+    ERP.erpname  = 'erp1_30hzlpf_-250to1500_avgref_preblc';
     ERP.filename = sprintf('%s.erp',ERP.erpname);
     ERP.filepath = par_erps_out_directory;
     ERP.subject  = participant; 
@@ -203,7 +203,154 @@ for pari = 1:length(participant_list)
     % Backup original ERP for re-use later on
     orig_ERP = ERP;
     
-    %% Step 3: Quality Control Analyses
+    %% Step 3: Bin Operations
+    % Define cell array of equations and run binoperator
+    % In the input ERP set:
+    %   b1-5   = ab trials
+    %   b6-10  = ac trials
+    %   b11-13  = de trials 
+    %   b14-16 = bad trials
+    binop_equations = {
+        'b17 = wavgbin(b1,b2) label ab-ABHIT', 'b18 = wavgbin(b3,b4) label ab-ABMISS', 'b19 = wavgbin(b6,b8) label ac-ACHIT',...
+        'b20 = wavgbin(b7,b9) label ac-ACMISS', 'b21 = wavgbin(b17,b18) label ab', 'b22 = wavgbin(b19,b20) label ac',...
+        'b23 = wavgbin(b11,b12) label de', 'b24 = wavgbin(b1,b3) label ab-ACHIT', 'b25 = wavgbin(b2,b4) label ab-ACMISS',...
+        'b26 = wavgbin(b6,b7) label ac-ABHIT', 'b27 = wavgbin(b8,b9) label ac-ABMISS',...
+        };
+    ERP = pop_binoperator( ERP, binop_equations);
     
+    % Export artifact summary to text file
+    pop_summary_AR_erp_detection(ERP,''); % This prints it to the screen
+    pop_summary_AR_erp_detection(ERP,fullfile(par_erps_out_directory,'erp2_artifact_summary.txt')); % This saves it to a file
+    
+    %% Step 4: Topo Plots
+    % Binned by trial type
+    cfg = [];
+    cfg.bins = 21:23; % This is the scene and object bins, respectively
+    cfg.channels = 1:ERP.nchan;
+    cfg.blc        = 'pre'; % Although this should already be done, make sure it is
+    ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
+        'AutoYlim', 'on', 'Axsize', [ 0.05 0.08], 'BinNum', 'on', 'ChLabel', 'on',...
+        'FontSizeChan',  16, 'FontSizeLeg',  16, 'FontSizeTicks',  14, 'LegPos', 'bottom', ...
+        'Linespec', {'k-' , 'r-' , 'b-' }, 'LineWidth',  1.5, ...
+        'Style', 'Topo', 'Tag', 'ERP Traces', 'Transparency',  0,  ....
+        'xscale', [ -200.0 498.0   -200:50:400 ], 'YDir', 'normal', ...
+        'maximize','on');
+    
+    % Save this figure
+    f = gcf;
+    f.Position = [500 50 1100 1000];
+    f.PaperPositionMode = 'auto';
+    saveas(f,fullfile(par_eeg_fig_directory,'erp2_trialtype_ERP_topo.png'));
+    if ~examine_figures, close(f); end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % AB trials binned by subsequent memory aka AB|ABhit vs. AB|ABmiss
+    cfg = [];
+    cfg.bins = 17:18; % This is the scene and object bins, respectively
+    cfg.channels = 1:ERP.nchan;
+    cfg.blc        = 'pre'; % Although this should already be done, make sure it is
+    ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
+        'AutoYlim', 'on', 'Axsize', [ 0.05 0.08], 'BinNum', 'on', 'ChLabel', 'on',...
+        'FontSizeChan',  16, 'FontSizeLeg',  16, 'FontSizeTicks',  14, 'LegPos', 'bottom', ...
+        'Linespec', {'k-' , 'r-' , 'b-' }, 'LineWidth',  1.5, ...
+        'Style', 'Topo', 'Tag', 'ERP Traces', 'Transparency',  0,  ....
+        'xscale', [ -200.0 498.0   -200:50:400 ], 'YDir', 'normal', ...
+        'maximize','on');
+    
+    % Save this figure
+    f = gcf;
+    f.Position = [500 50 1100 1000];
+    f.PaperPositionMode = 'auto';
+    saveas(f,fullfile(par_eeg_fig_directory,'erp2_AB_subsequentmem_ERP_topo.png'));
+    if ~examine_figures, close(f); end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % AC trials binned by subsequent memory aka AC|AChit vs. AC|ACmiss
+    cfg = [];
+    cfg.bins = 19:20; % This is the scene and object bins, respectively
+    cfg.channels = 1:ERP.nchan;
+    cfg.blc        = 'pre'; % Although this should already be done, make sure it is
+    ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
+        'AutoYlim', 'on', 'Axsize', [ 0.05 0.08], 'BinNum', 'on', 'ChLabel', 'on',...
+        'FontSizeChan',  16, 'FontSizeLeg',  16, 'FontSizeTicks',  14, 'LegPos', 'bottom', ...
+        'Linespec', {'k-' , 'r-' , 'b-' }, 'LineWidth',  1.5, ...
+        'Style', 'Topo', 'Tag', 'ERP Traces', 'Transparency',  0,  ....
+        'xscale', [ -200.0 498.0   -200:50:400 ], 'YDir', 'normal', ...
+        'maximize','on');
+    
+    % Save this figure
+    f = gcf;
+    f.Position = [500 50 1100 1000];
+    f.PaperPositionMode = 'auto';
+    saveas(f,fullfile(par_eeg_fig_directory,'erp2_AC_subsequentmem_ERP_topo.png'));
+    if ~examine_figures, close(f); end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % DE trials binned by subsequent memory aka DE|DEhit vs. DE|DEmiss
+    cfg = [];
+    cfg.bins = 11:12; % This is the scene and object bins, respectively
+    cfg.channels = 1:ERP.nchan;
+    cfg.blc        = 'pre'; % Although this should already be done, make sure it is
+    ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
+        'AutoYlim', 'on', 'Axsize', [ 0.05 0.08], 'BinNum', 'on', 'ChLabel', 'on',...
+        'FontSizeChan',  16, 'FontSizeLeg',  16, 'FontSizeTicks',  14, 'LegPos', 'bottom', ...
+        'Linespec', {'k-' , 'r-' , 'b-' }, 'LineWidth',  1.5, ...
+        'Style', 'Topo', 'Tag', 'ERP Traces', 'Transparency',  0,  ....
+        'xscale', [ -200.0 498.0   -200:50:400 ], 'YDir', 'normal', ...
+        'maximize','on');
+    
+    % Save this figure
+    f = gcf;
+    f.Position = [500 50 1100 1000];
+    f.PaperPositionMode = 'auto';
+    saveas(f,fullfile(par_eeg_fig_directory,'erp2_DE_subsequentmem_ERP_topo.png'));
+    if ~examine_figures, close(f); end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % Bin by conditional memory aka AB|AChit vs. AB|ACmiss
+    cfg = [];
+    cfg.bins = 24:25; % This is the scene and object bins, respectively
+    cfg.channels = 1:ERP.nchan;
+    cfg.blc        = 'pre'; % Although this should already be done, make sure it is
+    ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
+        'AutoYlim', 'on', 'Axsize', [ 0.05 0.08], 'BinNum', 'on', 'ChLabel', 'on',...
+        'FontSizeChan',  16, 'FontSizeLeg',  16, 'FontSizeTicks',  14, 'LegPos', 'bottom', ...
+        'Linespec', {'k-' , 'r-' , 'b-' }, 'LineWidth',  1.5, ...
+        'Style', 'Topo', 'Tag', 'ERP Traces', 'Transparency',  0,  ....
+        'xscale', [ -200.0 498.0   -200:50:400 ], 'YDir', 'normal', ...
+        'maximize','on');
+    
+    % Save this figure
+    f = gcf;
+    f.Position = [500 50 1100 1000];
+    f.PaperPositionMode = 'auto';
+    saveas(f,fullfile(par_eeg_fig_directory,'erp2_AB_conditionalmem_ERP_topo.png'));
+    if ~examine_figures, close(f); end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    % Bin by conditional memory aka AC|ABhit vs. AC|ABmiss
+    cfg = [];
+    cfg.bins = 26:27; % This is the scene and object bins, respectively
+    cfg.channels = 1:ERP.nchan;
+    cfg.blc        = 'pre'; % Although this should already be done, make sure it is
+    ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
+        'AutoYlim', 'on', 'Axsize', [ 0.05 0.08], 'BinNum', 'on', 'ChLabel', 'on',...
+        'FontSizeChan',  16, 'FontSizeLeg',  16, 'FontSizeTicks',  14, 'LegPos', 'bottom', ...
+        'Linespec', {'k-' , 'r-' , 'b-' }, 'LineWidth',  1.5, ...
+        'Style', 'Topo', 'Tag', 'ERP Traces', 'Transparency',  0,  ....
+        'xscale', [ -200.0 498.0   -200:50:400 ], 'YDir', 'normal', ...
+        'maximize','on');
+    
+    % Save this figure
+    f = gcf;
+    f.Position = [500 50 1100 1000];
+    f.PaperPositionMode = 'auto';
+    saveas(f,fullfile(par_eeg_fig_directory,'erp2_AC_conditionalmem_ERP_topo.png'));
+    if ~examine_figures, close(f); end
     
 end
