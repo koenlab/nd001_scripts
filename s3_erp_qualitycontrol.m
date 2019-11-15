@@ -68,93 +68,9 @@ for pari = 1:length(participant_list)
     EEG = pop_syncroartifacts(EEG, 'Direction', cfg.direction);
       
     % Create a 'backup' of the original data
-    EEG_orig = EEG; 
+    EEG_orig = EEG;       
     
-    % Low pass filter ERP at 100Hz
-    cfg = [];
-    cfg.chans    = 1:EEG.nbchan; % Apply to all channels
-    cfg.filter   = 'lowpass';
-    cfg.design   = 'butter';
-    cfg.cutoff   = 100;
-    cfg.order    = 2;
-    cfg.removedc = 'off';
-    cfg.boundary = -99;
-    EEG = pop_basicfilter( EEG, cfg.chans, ...
-        'Filter',   cfg.filter, ...
-        'Design',  cfg.design, ...
-        'Cutoff',   cfg.cutoff, ...
-        'Order',    cfg.order, ...
-        'RemoveDC', cfg.removedc, ...
-        'Boundary', cfg.boundary );       
-    
-    %% Step 1: Detect artifacts (epoch drift and peak-2-peak)
-    
-    % Conduct linear drift detection
-    cfg = [];
-    cfg.flag = 3; % flag for artifact
-    cfg.drift_threshold = 40; % Trheshold for a bad drift trial
-    cfg.time_bin1 = [-250 -150]; % time bin in msecs for the first portion to detect drift. This is the first 100 ms
-    cfg.time_bin2 = [1400 1498]; % time bin in msecs for the second portion to detect drift. This is the last 100 ms
-    cfg.chans = find( ~ismember( {EEG.chanlocs.labels}, {'VEOG' 'HEOG'} ) );
-    tbin1_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin1(1):EEG.srate:cfg.time_bin1(2)) , :), 2) );
-    tbin2_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin2(1):EEG.srate:cfg.time_bin2(2)) , :), 2) );
-    delta_mean = abs(tbin1_mean - tbin2_mean);
-    is_drift_art = delta_mean > cfg.drift_threshold;
-    for triali = 1:size(delta_mean)
-        this_trial = is_drift_art(:,triali);
-        if any(this_trial)
-            EEG = markartifacts(EEG, [1 cfg.flag], 1:EEG.nbchan, find(this_trial), triali, 0, 0);
-        end
-    end
-    
-    % Peak-2-Peak
-    cfg = [];
-    cfg.flag = 4;
-    cfg.twindow = [-250 1498];
-    cfg.threshold = 150;
-    cfg.windowsize = 200;
-    cfg.windowstep = 50;
-    cfg.channel = find( ~ismember( {EEG.chanlocs.labels}, {'VEOG' 'HEOG'} ) );
-    EEG = pop_artmwppth( EEG, ...
-        'Twindow', cfg.twindow, ...
-        'Threshold', cfg.threshold, ...
-        'Windowsize', cfg.windowsize, ...
-        'Windowstep', cfg.windowstep, ...
-        'Channel', cfg.channel, ...
-        'Flag', cfg.flag );
-    
-    % Do a final round of manual inspection
-    while true
-
-        % Try pop_eegplot (while loop needed) for second round of manual
-        % inspection... 
-        
-        pop_eegplot( EEG, 1, 1, 0 );
-        waitfor( findobj('parent', gcf, 'string', 'UPDATE MARKS'), 'userdata');
-
-        % Ask if we are OK with results
-        clear_bads = questdlg('Are you done marking epochs (click No if you need to mark more)?');
-        if strcmpi(clear_bads,'yes')
-            break;
-        else
-            continue; %if user wants to re-inspect the epochs again, continue to the next iteration of th while loop and run pop_eegplot again
-        end
-        
-    end
-    
-    % Sync Artifacts for verification
-    cfg = [];
-    cfg.direction = 'bidirectional';
-    EEG = pop_syncroartifacts(EEG, 'Direction', cfg.direction);
-    
-    % Get the EEG.reject values and write to disc in main derivatives
-    erp_marked_epochs = find(EEG.reject.rejmanual);
-    save( fullfile( par_deriv_out_directory, 'erp_marked_epochs.mat') , 'erp_marked_epochs' );
-    
-    % Export EVENTLIST to a file in elist
-    EEG = pop_exporteegeventlist( EEG , 'Filename', fullfile( par_elist_out_directory, 'erp_good_epochs_elist.txt' ));
-    
-    %% Step 2: Make ERP set
+    %% Step 1: Make ERP set
     cfg = [];
     cfg.criterion = 'good'; % Only average Good trials
     cfg.DQ_flag   = 1; % Reject all trials with an artifact
@@ -203,7 +119,7 @@ for pari = 1:length(participant_list)
     % Backup original ERP for re-use later on
     orig_ERP = ERP;
     
-    %% Step 3: Bin Operations
+    %% Step 2: Bin Operations
     % Define cell array of equations and run binoperator
     % In the input ERP set:
     %   b1-5   = ab trials
@@ -222,7 +138,7 @@ for pari = 1:length(participant_list)
     pop_summary_AR_erp_detection(ERP,''); % This prints it to the screen
     pop_summary_AR_erp_detection(ERP,fullfile(par_erps_out_directory,'erp2_artifact_summary.txt')); % This saves it to a file
     
-    %% Step 4: Topo Plots
+    %% Step 3: Topo Plots
     % Binned by trial type
     cfg = [];
     cfg.bins = 21:23; % This is the scene and object bins, respectively

@@ -623,7 +623,7 @@ for pari = 1:length(participant_list)
     % Inspect previously marked epochs and remove marking
     % if they are "good" now. Also remove any epochs that have come up
     % as "bad" after removing ICs. Then do automatic algorithm for min-max
-    % extreme value correction.
+    % extreme value correction, linear drift, peak-2-peak.
     
     % Sync Artifacts
     cfg = [];
@@ -637,7 +637,41 @@ for pari = 1:length(participant_list)
     cfg.flag = 2;
     EEG = pop_artextval( EEG, 'Channel', cfg.channel, 'Flag', cfg.flag, 'Threshold', cfg.threshold);
     
-    % Do another round of manual inspection
+    % Conduct linear drift detection
+    cfg = [];
+    cfg.flag = 3; % flag for artifact
+    cfg.drift_threshold = 40; % Trheshold for a bad drift trial
+    cfg.time_bin1 = [-250 -150]; % time bin in msecs for the first portion to detect drift. This is the first 100 ms
+    cfg.time_bin2 = [1400 1498]; % time bin in msecs for the second portion to detect drift. This is the last 100 ms
+    cfg.chans = find( ~ismember( {EEG.chanlocs.labels}, {'VEOG' 'HEOG'} ) );
+    tbin1_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin1(1):EEG.srate:cfg.time_bin1(2)) , :), 2) );
+    tbin2_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin2(1):EEG.srate:cfg.time_bin2(2)) , :), 2) );
+    delta_mean = abs(tbin1_mean - tbin2_mean);
+    is_drift_art = delta_mean > cfg.drift_threshold;
+    for triali = 1:size(delta_mean)
+        this_trial = is_drift_art(:,triali);
+        if any(this_trial)
+            EEG = markartifacts(EEG, [1 cfg.flag], 1:EEG.nbchan, find(this_trial), triali, 0, 0);
+        end
+    end
+    
+    % Peak-2-Peak
+    cfg = [];
+    cfg.flag = 4;
+    cfg.twindow = [-250 1498];
+    cfg.threshold = 150;
+    cfg.windowsize = 200;
+    cfg.windowstep = 50;
+    cfg.channel = find( ~ismember( {EEG.chanlocs.labels}, {'VEOG' 'HEOG'} ) );
+    EEG = pop_artmwppth( EEG, ...
+        'Twindow', cfg.twindow, ...
+        'Threshold', cfg.threshold, ...
+        'Windowsize', cfg.windowsize, ...
+        'Windowstep', cfg.windowstep, ...
+        'Channel', cfg.channel, ...
+        'Flag', cfg.flag );
+    
+    % Do a final round of manual inspection
     while true
 
         % Try pop_eegplot (while loop needed) for second round of manual
@@ -656,10 +690,19 @@ for pari = 1:length(participant_list)
         
     end
     
-    % Sync Artifacts
+    % Sync Artifacts for verification
     cfg = [];
     cfg.direction = 'bidirectional';
     EEG = pop_syncroartifacts(EEG, 'Direction', cfg.direction);
+    
+    % Gather the postica rejected epochs
+    postica_art_epochs = find(EEG.reject.rejmanual);
+
+    % Save the EEG.etc.bad_channels structure to a file
+    save( fullfile( par_deriv_out_directory, 'postica_art_epochs.mat' ), 'postica_art_epochs' );
+    
+    % Export EVENTLIST to a file in elist
+    EEG = pop_exporteegeventlist( EEG , 'Filename', fullfile( par_elist_out_directory, 'erp_good_epochs_elist.txt' ));
     
     % Save the set
     cfg = [];
@@ -667,11 +710,5 @@ for pari = 1:length(participant_list)
     cfg.path     = par_sets_out_directory;
     cfg.filename = [cfg.setname '.set'];
     EEG = save_eeglab_set( EEG, cfg.setname, cfg.path, cfg.filename );
-    
-    % Gather the postica rejected epochs
-    postica_art_epochs = find(EEG.reject.rejmanual);
-
-    % Save the EEG.etc.bad_channels structure to a file
-    save( fullfile( par_deriv_out_directory, 'postica_art_epochs.mat' ), 'postica_art_epochs' );
     
 end
