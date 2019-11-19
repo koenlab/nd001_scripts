@@ -247,28 +247,10 @@ for pari = 1:length(participant_list)
     cfg.flag = 2;
     EEG = pop_artextval( EEG, 'Channel', cfg.channel, 'Flag', cfg.flag, 'Threshold', cfg.threshold);
     
-    % Conduct linear drift detection
-    cfg = [];
-    cfg.flag = 3; % flag for artifact
-    cfg.drift_threshold = 40; % Trheshold for a bad drift trial
-    cfg.time_bin1 = [-250 -150]; % time bin in msecs for the first portion to detect drift. This is the first 100 ms
-    cfg.time_bin2 = [1400 1498]; % time bin in msecs for the second portion to detect drift. This is the last 100 ms
-    cfg.chans = find( ~ismember( {EEG.chanlocs.labels}, {'VEOG' 'HEOG'} ) );
-    tbin1_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin1(1):EEG.srate:cfg.time_bin1(2)) , :), 2) );
-    tbin2_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin2(1):EEG.srate:cfg.time_bin2(2)) , :), 2) );
-    delta_mean = abs(tbin1_mean - tbin2_mean);
-    is_drift_art = delta_mean > cfg.drift_threshold;
-    for triali = 1:size(delta_mean)
-        this_trial = is_drift_art(:,triali);
-        if any(this_trial)
-            EEG = markartifacts(EEG, [1 cfg.flag], 1:EEG.nbchan, find(this_trial), triali, 0, 0);
-        end
-    end
-    
     % Peak-2-Peak
     cfg = [];
     cfg.flag = 4;
-    cfg.twindow = [-250 1498];
+    cfg.twindow = [-500 1998];
     cfg.threshold = 150;
     cfg.windowsize = 200;
     cfg.windowstep = 50;

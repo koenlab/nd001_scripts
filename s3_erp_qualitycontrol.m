@@ -1,6 +1,6 @@
 %% Stage 3: Perform Quality Control Analysis with ERPs %%
 
-% Step 0: Load set10 (cleaned 0.1Hz HPF data from s2)and trim time (-250 to 1500ms)
+% Step 0: Load set10 (cleaned 0.1Hz HPF data from s2), trim time (-250 to 1500ms)
 % Step 1: Artifact detection (epoch drift, peak-to-peak, manual inspect)
 % Step 2: Generate ERPs
 %    Drop EOG channels
@@ -73,7 +73,27 @@ for pari = 1:length(participant_list)
     % Create a 'backup' of the original data
     EEG_orig = EEG;       
     
-    %% Step 1: Make ERP set
+    
+    %% Step 1: Artifact Detection
+    % Conduct linear drift detection
+    cfg = [];
+    cfg.flag = 3; % flag for artifact
+    cfg.drift_threshold = 40; % Trheshold for a bad drift trial
+    cfg.time_bin1 = [-250 -150]; % time bin in msecs for the first portion to detect drift. This is the first 100 ms
+    cfg.time_bin2 = [1400 1498]; % time bin in msecs for the second portion to detect drift. This is the last 100 ms
+    cfg.chans = find( ~ismember( {EEG.chanlocs.labels}, {'VEOG' 'HEOG'} ) );
+    tbin1_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin1(1):EEG.srate:cfg.time_bin1(2)) , :), 2) );
+    tbin2_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin2(1):EEG.srate:cfg.time_bin2(2)) , :), 2) );
+    delta_mean = abs(tbin1_mean - tbin2_mean);
+    is_drift_art = delta_mean > cfg.drift_threshold;
+    for triali = 1:size(delta_mean)
+        this_trial = is_drift_art(:,triali);
+        if any(this_trial)
+            EEG = markartifacts(EEG, [1 cfg.flag], 1:EEG.nbchan, find(this_trial), triali, 0, 0);
+        end
+    end
+    
+    %% Step 2: Make ERP set
     cfg = [];
     cfg.criterion = 'good'; % Only average Good trials
     cfg.DQ_flag   = 1; % Reject all trials with an artifact
@@ -109,7 +129,7 @@ for pari = 1:length(participant_list)
         'RemoveDC', cfg.removedc );     
     
     % Save filtered ERP
-    ERP.erpname  = 'erp1_30hzlpf_-250to1500_avgref_preblc';
+    ERP.erpname  = 'erp_30hzlpf_-250to1500_avgref_preblc';
     ERP.filename = sprintf('%s.erp',ERP.erpname);
     ERP.filepath = par_erps_out_directory;
     ERP.subject  = participant; 
@@ -122,7 +142,7 @@ for pari = 1:length(participant_list)
     % Backup original ERP for re-use later on
     orig_ERP = ERP;
     
-    %% Step 2: Bin Operations
+    %% Step 3: Bin Operations
     % Define cell array of equations and run binoperator
     % In the input ERP set:
     %   b1-5   = ab trials
@@ -148,7 +168,14 @@ for pari = 1:length(participant_list)
     pop_summary_AR_erp_detection(ERP,''); % This prints it to the screen
     pop_summary_AR_erp_detection(ERP,fullfile(par_erps_out_directory,'erp_artifact_summary.txt')); % This saves it to a file
     
-    %% Step 3: Topo Plots
+    % Save ERP 
+    ERP.erpname  = 'erp_30hzlpf_-250to1500_avgref_preblc_binop';
+    ERP.filename = sprintf('%s.erp',ERP.erpname);
+    ERP.filepath = par_erps_out_directory;
+    ERP.subject  = participant; 
+    pop_savemyerp( ERP );
+    
+    %% Step 4: Topo Plots
     % Binned by trial type
     cfg = [];
     cfg.bins = 21:23; % This is the scene and object bins, respectively
@@ -210,7 +237,7 @@ for pari = 1:length(participant_list)
     f = gcf;
     f.Position = [500 50 1100 1000];
     f.PaperPositionMode = 'auto';
-    saveas(f,fullfile(par_fig_out_directory,'erp2_AC_subsequentmem_ERP_topo.png'));
+    saveas(f,fullfile(par_fig_out_directory,'erp_AC_SME-AC_ERP_topo.png'));
     if ~examine_figures, close(f); end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -232,7 +259,7 @@ for pari = 1:length(participant_list)
     f = gcf;
     f.Position = [500 50 1100 1000];
     f.PaperPositionMode = 'auto';
-    saveas(f,fullfile(par_fig_out_directory,'erp2_DE_subsequentmem_ERP_topo.png'));
+    saveas(f,fullfile(par_fig_out_directory,'erp_DE_SME-DE_ERP_topo.png'));
     if ~examine_figures, close(f); end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -254,7 +281,7 @@ for pari = 1:length(participant_list)
     f = gcf;
     f.Position = [500 50 1100 1000];
     f.PaperPositionMode = 'auto';
-    saveas(f,fullfile(par_fig_out_directory,'erp2_AB_conditionalmem_ERP_topo.png'));
+    saveas(f,fullfile(par_fig_out_directory,'erp_AB_SME-AC_ERP_topo.png'));
     if ~examine_figures, close(f); end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -276,7 +303,7 @@ for pari = 1:length(participant_list)
     f = gcf;
     f.Position = [500 50 1100 1000];
     f.PaperPositionMode = 'auto';
-    saveas(f,fullfile(par_fig_out_directory,'erp2_AC_conditionalmem_ERP_topo.png'));
+    saveas(f,fullfile(par_fig_out_directory,'erp_AC_SME-AB_ERP_topo.png'));
     if ~examine_figures, close(f); end
     
 end
