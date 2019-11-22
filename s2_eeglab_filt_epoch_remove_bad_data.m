@@ -165,6 +165,11 @@ for pari = 1:length(participant_list)
         % Get the current trial
         cur_event = EEG.event(evti);
         
+        % Fix for boundary event in middle of EEG.event structure
+        if isempty(cur_event.memory_bin)
+            continue
+        end
+        
         % Determine trial type
         this_mem = cur_event.memory_bin;
         mem_label = mem_bin.(this_mem);
