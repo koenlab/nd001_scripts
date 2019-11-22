@@ -113,7 +113,6 @@ for pari = 1:length(participant_list)
         INEEG2      = pop_loadbv(par_source_eeg_directory, eeg2_vhdr, [], []);
         
         EEG = pop_mergeset(INEEG1, INEEG2);
-        eeg_set     = sprintf('%s_task-study_eeg.vhdr', participant);
     else
         
     %Load EEG Data for all other subjects with one file
