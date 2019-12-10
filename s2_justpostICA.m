@@ -38,6 +38,7 @@ user_def_badchans.sub_103 = {'FC3'};
 user_def_badchans.sub_108 = {'C5'};
 user_def_badchans.sub_109 = {'Cz'};
 user_def_badchans.sub_122 = {'Cz'};
+user_def_badchans.sub_123 = {'P1'};
 
 %% Add path to EEGLAB and run it (to get full path structure)
 eeglab; 

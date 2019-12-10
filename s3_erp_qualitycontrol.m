@@ -241,7 +241,7 @@ for pari = 1:length(participant_list)
     if ~examine_figures, close(f); end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+     
     % DE trials binned by subsequent memory aka DE|DEhit vs. DE|DEmiss
     cfg = [];
     cfg.bins = 11:12; % This is the scene and object bins, respectively
