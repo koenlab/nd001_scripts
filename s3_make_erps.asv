@@ -150,9 +150,9 @@ for pari = 1:length(participant_list)
     %   b11-13  = de trials 
     %   b14-16 = bad trials
     binop_equations = {
-        'nb1 = wavgbin(b1,b2,b3,b4) label ab', ...
-        'nb2 = wavgbin(b5,b6,b7,b8) label ac',...
-        'nb3 = wavgbin(b11,b12) label de', ...
+        'b17 = wavgbin(b17,b18) label ab', ...
+        'b18 = wavgbin(b19,b20) label ac',...
+        'b19 = wavgbin(b11,b12) label de', ...
         };
     ERP = pop_binoperator( ERP, binop_equations);
     
@@ -161,7 +161,7 @@ for pari = 1:length(participant_list)
     pop_summary_AR_erp_detection(ERP,fullfile(par_erps_out_directory,'erp_artifact_summary.txt')); % This saves it to a file
     
     % Save ERP 
-    ERP.erpname  = 'erp_30hzlpf_-250to1500_avgref_preblc_binop_trialtype';
+    ERP.erpname  = 'erp_30hzlpf_-250to1500_avgref_preblc_binop';
     ERP.filename = sprintf('%s.erp',ERP.erpname);
     ERP.filepath = par_erps_out_directory;
     ERP.subject  = participant; 
@@ -170,7 +170,7 @@ for pari = 1:length(participant_list)
     %% Step 4: Topo Plot for Trial Type
     % Binned by trial type
     cfg = [];
-    cfg.bins = 1:3; %AB, AC, DE
+    cfg.bins = 17:19; %AB, AC, DE
     cfg.channels = 1:ERP.nchan;
     cfg.blc        = 'pre'; % Although this should already be done, make sure it is
     ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
@@ -187,19 +187,20 @@ for pari = 1:length(participant_list)
     f.PaperPositionMode = 'auto';
     saveas(f,fullfile(par_fig_out_directory,'erp_trialtype_ERP_topo.png'));
     if ~examine_figures, close(f); end
-      
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    
     %% Bin Operations for Subsequent Memory
     % Restore orig ERP
     ERP = orig_ERP;
     
     % Define bin operations equations and run binoperator
     binop_equations = {
-        'nb1 = wavgbin(b1,b2) label ab-ABHIT', ...
-        'nb2 = wavgbin(b3,b4) label ab-ABMISS', ...
-        'nb3 = wavgbin(b6,b8) label ac-ACHIT',...
-        'nb4 = wavgbin(b7,b9) label ac-ACMISS'...
-        'nb5 = b11 label deHIT',...
-        'nb6 = b12 label deMISS'};
+        'b20 = wavgbin(b1,b2) label ab-ABHIT', ...
+        'b21 = wavgbin(b3,b4) label ab-ABMISS', ...
+        'b22 = wavgbin(b6,b8) label ac-ACHIT',...
+        'b23 = wavgbin(b7,b9) label ac-ACMISS'};
     
     ERP = pop_binoperator( ERP, binop_equations);
     
@@ -207,18 +208,21 @@ for pari = 1:length(participant_list)
     pop_summary_AR_erp_detection(ERP,''); % This prints it to the screen
     pop_summary_AR_erp_detection(ERP,fullfile(par_erps_out_directory,'erp_artifact_summary.txt')); % This saves it to a file
     
+    % Run binops again to make differnce waves
+    
+    
     % Save ERP
-    ERP.erpname  = 'erp_30hzlpf_-250to1500_avgref_preblc_binop_SME';
+    ERP.erpname  = 'erp_30hzlpf_-250to1500_avgref_preblc_binop';
     ERP.filename = sprintf('%s.erp',ERP.erpname);
     ERP.filepath = par_erps_out_directory;
     ERP.subject  = participant;
     pop_savemyerp( ERP );
     
-    %% Topo Plots for Subsequent Memory
+    %% Topo Plots for Subsequent and Conditional Memory
     
     % AB trials binned by subsequent memory aka AB|ABhit vs. AB|ABmiss
     cfg = [];
-    cfg.bins = 1:2;
+    cfg.bins = 20:21;
     cfg.channels = 1:ERP.nchan;
     cfg.blc        = 'pre'; % Although this should already be done, make sure it is
     ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
@@ -240,7 +244,7 @@ for pari = 1:length(participant_list)
     
     % AC trials binned by subsequent memory aka AC|AChit vs. AC|ACmiss
     cfg = [];
-    cfg.bins = 3:4; % This is the scene and object bins, respectively
+    cfg.bins = 21:22; % This is the scene and object bins, respectively
     cfg.channels = 1:ERP.nchan;
     cfg.blc        = 'pre'; % Although this should already be done, make sure it is
     ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
@@ -262,7 +266,7 @@ for pari = 1:length(participant_list)
      
     % DE trials binned by subsequent memory aka DE|DEhit vs. DE|DEmiss
     cfg = [];
-    cfg.bins = 5:6; % This is the scene and object bins, respectively
+    cfg.bins = 11:12; % This is the scene and object bins, respectively
     cfg.channels = 1:ERP.nchan;
     cfg.blc        = 'pre'; % Although this should already be done, make sure it is
     ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
@@ -280,35 +284,11 @@ for pari = 1:length(participant_list)
     saveas(f,fullfile(par_fig_out_directory,'erp_DE_SME-DE_ERP_topo.png'));
     if ~examine_figures, close(f); end
     
-   %% Bin Operations for Conditional Memory
-    % Restore orig ERP
-    ERP = orig_ERP;
-    
-    % Define bin operations equations and run binoperator
-    binop_equations = {
-        'nb1 = wavgbin(b1,b3) label ab-ACHIT', ...
-        'nb2 = wavgbin(b2,b4) label ab-ACMISS',...
-        'nb3 = wavgbin(b6,b7) label ac-ABHIT', ...
-        'nb4 = wavgbin(b8,b9) label ac-ABMISS'};
-    
-    ERP = pop_binoperator( ERP, binop_equations);
-    
-    % Export artifact summary to text file
-    pop_summary_AR_erp_detection(ERP,''); % This prints it to the screen
-    pop_summary_AR_erp_detection(ERP,fullfile(par_erps_out_directory,'erp_artifact_summary.txt')); % This saves it to a file
-    
-    % Save ERP
-    ERP.erpname  = 'erp_30hzlpf_-250to1500_avgref_preblc_binop_condmem';
-    ERP.filename = sprintf('%s.erp',ERP.erpname);
-    ERP.filepath = par_erps_out_directory;
-    ERP.subject  = participant;
-    pop_savemyerp( ERP );
-    
-    %% Topo Plots for Conditional Memory
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Bin by conditional memory aka AB|AChit vs. AB|ACmiss
     cfg = [];
-    cfg.bins = 1:2; % This is the scene and object bins, respectively
+    cfg.bins = 24:25; % This is the scene and object bins, respectively
     cfg.channels = 1:ERP.nchan;
     cfg.blc        = 'pre'; % Although this should already be done, make sure it is
     ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
@@ -330,7 +310,7 @@ for pari = 1:length(participant_list)
     
     % Bin by conditional memory aka AC|ABhit vs. AC|ABmiss
     cfg = [];
-    cfg.bins = 3:4; % This is the scene and object bins, respectively
+    cfg.bins = 26:27; % This is the scene and object bins, respectively
     cfg.channels = 1:ERP.nchan;
     cfg.blc        = 'pre'; % Although this should already be done, make sure it is
     ERP = pop_ploterps( ERP,  cfg.bins,  cfg.channels , 'Blc', cfg.blc, ....
