@@ -38,69 +38,84 @@ participant_list       = participant_selector(directories.top);
 reference_list = {'avg', 'mastoid'};
 
 %% Loop through participants
-for r = 1:length(reference_list)
-    for pari = 1:length(participant_list)
-        
-        %% Step 0: Get some general information defined
-        % Convert participant to char type
-        participant = participant_list{pari};
-        
-        % Print info to screen
-        fprintf('Preprocessing data for %s:\n',participant);
-        
-        % Define directory structure in data
-        par_data_directory      = fullfile( directories.top, participant );
-        par_data_beh_directory  = fullfile( par_data_directory, 'beh' );
-        par_data_eeg_directory  = fullfile( par_data_directory, 'eeg' );
-        par_deriv_out_directory = fullfile( directories.deriv_eeg, 'task-study', participant );
-        par_fig_out_directory   = fullfile( par_deriv_out_directory, 'figures' );
-        par_sets_out_directory  = fullfile( par_deriv_out_directory, 'eeglab_sets' );
-        par_erps_out_directory  = fullfile( par_deriv_out_directory, 'erplab_sets' );
-        par_elist_out_directory = fullfile( par_erps_out_directory, 'event_lists' );
-        
-        % Load EEG set file
-        if r == 1       %for average re-reference
-            eeg_file = 'set10_goodepochs_pre250blc_avgref_0.1hzhpf_500Hz.set';
-        elseif r == 2   %for mastoid re-reference
-            eeg_file = 'set11_goodepochs_pre250blc_mastoidref_0.1hzhpf_500Hz.set';
+for pari = 1:length(participant_list)
+    
+    %% Step 0: Get some general information defined
+    % Convert participant to char type
+    participant = participant_list{pari};
+    
+    % Print info to screen
+    fprintf('Preprocessing data for %s:\n',participant);
+    
+    % Define directory structure in data
+    par_data_directory      = fullfile( directories.top, participant );
+    par_data_beh_directory  = fullfile( par_data_directory, 'beh' );
+    par_data_eeg_directory  = fullfile( par_data_directory, 'eeg' );
+    par_deriv_out_directory = fullfile( directories.deriv_eeg, 'task-study', participant );
+    par_fig_out_directory   = fullfile( par_deriv_out_directory, 'figures' );
+    par_sets_out_directory  = fullfile( par_deriv_out_directory, 'eeglab_sets' );
+    par_erps_out_directory  = fullfile( par_deriv_out_directory, 'erplab_sets' );
+    par_elist_out_directory = fullfile( par_erps_out_directory, 'event_lists' );
+    
+    % Load EEG set file
+    eeg_file = 'set12_goodepochs_pre250blc_avgref_0.01hzhpf_500Hz.set';
+    EEG = pop_loadset( eeg_file, par_sets_out_directory );
+    
+    % Remove an unneccesary file
+    bad_file = fullfile(par_sets_out_directory, 'set11_goodepochs_pre250blc_avgref_0.01hzhpf_500Hz.set' );
+    if exist(bad_file,'file')
+        delete(bad_file);
+    end
+    
+    % Backup reject fields
+    this_reject = EEG.reject;
+    
+    % Trim in time
+    EEG = pop_select( EEG, 'time', [-.25 1.5]);
+    EEG.reject = this_reject;
+    
+    % Sync Artifacts as trim in time delects EEG.reject.rejmanual
+    cfg = [];
+    cfg.direction = 'bidirectional';
+    EEG = pop_syncroartifacts(EEG, 'Direction', cfg.direction);
+    
+    % Create a 'backup' of the original data
+    EEG_orig = EEG;
+    
+    %% Step 1: Artifact Detection
+    % Conduct linear drift detection
+    cfg = [];
+    cfg.flag = 3; % flag for artifact
+    cfg.drift_threshold = 40; % Threshold for a bad drift trial
+    cfg.time_bin1 = [-250 -150]; % time bin in msecs for the first portion to detect drift. This is the first 100 ms
+    cfg.time_bin2 = [1400 1498]; % time bin in msecs for the second portion to detect drift. This is the last 100 ms
+    cfg.chans = find( ~ismember( {EEG.chanlocs.labels}, {'VEOG' 'HEOG'} ) );
+    tbin1_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin1(1):EEG.srate:cfg.time_bin1(2)) , :), 2) );
+    tbin2_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin2(1):EEG.srate:cfg.time_bin2(2)) , :), 2) );
+    delta_mean = abs(tbin1_mean - tbin2_mean);
+    is_drift_art = delta_mean > cfg.drift_threshold;
+    for triali = 1:size(delta_mean)
+        this_trial = is_drift_art(:,triali);
+        if any(this_trial)
+            EEG = markartifacts(EEG, [1 cfg.flag], 1:EEG.nbchan, find(this_trial), triali, 0, 0);
         end
+    end
+    
+    for r = 1:length(reference_list)
         
-        EEG = pop_loadset( eeg_file, par_sets_out_directory );
+        % Perform mastoid rereference using ERPLAB function
+        chanop_file = fullfile(directories.spec_files, 'chanops_eeg_reref_linked_mastoid.txt');
+        EEG = pop_eegchanoperator( EEG, chanop_file );
         
-        % Backup reject fields
-        this_reject = EEG.reject;
+        % Add back in channel locations
+        EEG = pop_add_standard_chanlocs( EEG );
         
-        % Trim in time
-        EEG = pop_select( EEG, 'time', [-.25 1.5]);
-        EEG.reject = this_reject;
-        
-        % Sync Artifacts as trim in time delects EEG.reject.rejmanual
+        % Save the set
         cfg = [];
-        cfg.direction = 'bidirectional';
-        EEG = pop_syncroartifacts(EEG, 'Direction', cfg.direction);
-        
-        % Create a 'backup' of the original data
-        EEG_orig = EEG;
-        
-        
-        %% Step 1: Artifact Detection
-        % Conduct linear drift detection
-        cfg = [];
-        cfg.flag = 3; % flag for artifact
-        cfg.drift_threshold = 40; % Threshold for a bad drift trial
-        cfg.time_bin1 = [-250 -150]; % time bin in msecs for the first portion to detect drift. This is the first 100 ms
-        cfg.time_bin2 = [1400 1498]; % time bin in msecs for the second portion to detect drift. This is the last 100 ms
-        cfg.chans = find( ~ismember( {EEG.chanlocs.labels}, {'VEOG' 'HEOG'} ) );
-        tbin1_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin1(1):EEG.srate:cfg.time_bin1(2)) , :), 2) );
-        tbin2_mean = squeeze( mean( EEG.data(cfg.chans, ismember(EEG.times,cfg.time_bin2(1):EEG.srate:cfg.time_bin2(2)) , :), 2) );
-        delta_mean = abs(tbin1_mean - tbin2_mean);
-        is_drift_art = delta_mean > cfg.drift_threshold;
-        for triali = 1:size(delta_mean)
-            this_trial = is_drift_art(:,triali);
-            if any(this_trial)
-                EEG = markartifacts(EEG, [1 cfg.flag], 1:EEG.nbchan, find(this_trial), triali, 0, 0);
-            end
-        end
+        cfg.setname  = 'set11_goodepochs_pre250blc_mastoidref_0.1hzhpf_500Hz.set';
+        cfg.path     = par_sets_out_directory;
+        cfg.filename = [cfg.setname '.set'];
+        EEG = save_eeglab_set( EEG, cfg.setname, cfg.path, cfg.filename );
         
         %% Step 2: Make ERP set
         cfg = [];
@@ -357,5 +372,6 @@ for r = 1:length(reference_list)
         saveas(f,fullfile(par_fig_out_directory,strcat('erp_', reference_list{r}, 'ref_AC_SME-AB_ERP_topo.png')));
         if ~examine_figures, close(f); end
         
-    end
+    end % for r = 1:length(reference_list)
+    
 end
