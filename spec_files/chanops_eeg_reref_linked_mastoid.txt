@@ -61,6 +61,6 @@ nch60 = ch60 - ( (ch10 + ch21) / 2 ) Label F6
 nch61 = ch61 - ( (ch10 + ch21) / 2 ) Label AF8 
 nch62 = ch62 - ( (ch10 + ch21) / 2 ) Label AF4 
 nch63 = ch63 - ( (ch10 + ch21) / 2 ) Label F2  
-nch64 = - ( (ch10 + ch21) / 2 ) Label FCz      
+nch64 = ch64 - ( (ch10 + ch21) / 2 ) Label FCz      
 nch65 = ch64 Label VEOG                        
 nch66 = ch65 Label HEOG                        

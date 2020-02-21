@@ -55,13 +55,13 @@ for row = 1:size(dt,1)
     end
     dt.all_keys{row} = char(this_val);
     
-    % Convert all_rts to matrix
-    if strcmpi(dt.all_rts{row},'--')
-        dt.all_rts{row} = -99;
-        dt.n_resps(row) = 0;
-    else
-        dt.all_rts{row} = eval(dt.all_rts{row});
-    end
+%     % Convert all_rts to matrix
+%     if strcmpi(dt.all_rts{row},'--')
+%         dt.all_rts{row} = -99;
+%         dt.n_resps(row) = 0;
+%     else
+%         dt.all_rts{row} = eval(dt.all_rts{row});
+%     end
     
 end
 
