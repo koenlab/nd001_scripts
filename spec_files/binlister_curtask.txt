@@ -1,0 +1,19 @@
+bin 1
+artist
+.{1}
+
+bin 2
+function
+.{2}
+
+bin 3
+pleasant
+.{3}
+
+bin 4
+vacation
+.{4}
+
+bin 5
+bad
+.{99}
